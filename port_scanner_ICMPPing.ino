@@ -9,23 +9,20 @@
 
 byte ip[] = {};
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-//byte local_IP[] = {Ethernet.localIP()};
-byte basenetwork[] = { 192,168,0,3 }; // Test a Class C network, put here the NetID, doesn't matter what HostID you choose.
 String msg;
 EthernetClient client;
 int led = 9;
 File myFile;
 IPAddress pingAddr();
+byte basenetwork[] = {192,168,0,1};
 
 SOCKET pingSocket = 0;
-
 char buffer [256];
 ICMPPing ping(pingSocket, (uint16_t)random(0, 255));
 
-
 void setup()
 {
-  pinMode(10, OUTPUT);
+  pinMode(10, OUTPUT); // initiate SD card
   if(!SD.begin(4)){
     return;
   }
@@ -39,6 +36,7 @@ void setup()
     Ethernet.begin(mac, ip );
     Serial.println("Setting Default Network Configurations");
   }
+    
 }
 void loop()
 {
@@ -47,7 +45,7 @@ void loop()
   msg="Server: X.X.X.";
   msg += (basenetwork[3]); //building the log string
   
-  ICMPEchoReply echoReply = ping(basenetwork, 4);
+  ICMPEchoReply echoReply = ping(basenetwork, 2);  // ping test
   if (echoReply.status == SUCCESS)
   {
     Serial.println("Host Alive");
@@ -64,16 +62,18 @@ void loop()
         msg += (" Port:");
         msg += (port);
         msg +=(" OPEN ");
+        client.flush();
+        client.stop();
       } 
-      client.flush();
-      client.stop();
+      //client.flush();
+      //client.stop();
    }
   Serial.println(msg);
-  //myFile = SD.open("popeye/scan.txt", FILE_WRITE);
-  //if(myFile) {
-   //myFile.println(msg);
-   //myFile.close();
-   //}
+  myFile = SD.open("popeye/scan.txt", FILE_WRITE);
+  if(myFile) {
+   myFile.println(msg);
+   myFile.close();
+   }
   }
   else // can be remove, only for debugging
   {
